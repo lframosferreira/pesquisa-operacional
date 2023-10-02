@@ -1,7 +1,7 @@
 using JuMP
 using HiGHS
 
-mutable struct conjuntoIndependenteData
+mutable struct coloracaoData
 	numberOfVertices::Int64 # número de vértices
 	adjMatrix::Matrix{Int64} # Matriz de adjacências
 end
@@ -21,7 +21,7 @@ function readData(file)
             adjMatrix[v2, v1] = 1
 		end
 	end
-	return conjuntoIndependenteData(numberOfVertices, adjMatrix)
+	return coloracaoData(numberOfVertices, adjMatrix)
 end
 
 model = Model(HiGHS.Optimizer)
@@ -30,20 +30,31 @@ file = open(ARGS[1], "r")
 
 data = readData(file)
 
-# Vértice está no conjunto independente
-@variable(model, x[i = 1:data.numberOfVertices], Bin)
+# Podemos assumir que existem N cores. Ci indica que a cor i está sendo utilizada
+@variable(model, c[i = 1:data.numberOfVertices], Bin)
 
-# Se a aresta ij estiver no grafo, apenas um dos vértices pode estar no conjunto independente
+# Vértice i está colorido com a cor j
+@variable(model, x[i = 1:data.numberOfVertices, j = 1:data.numberOfVertices], Bin)
+
+
+# Cada vértice deve estar colorido com exatamente uma cor
 for i in 1:data.numberOfVertices
-    for j in i:data.numberOfVertices
+    @constraint(model, sum(x[i, j] for j in 1:data.numberOfVertices) == 1)
+end
+
+for i in 1:data.numberOfVertices
+    for j in 1:data.numberOfVertices
         if (data.adjMatrix[i, j] == 1)
-	        @constraint(model, x[i] + x[j] <= 1)
+            for color in 1:data.numberOfVertices
+	            @constraint(model, x[i,color] + x[j, color] <= c[color])
+            end
         end
     end
 end
 
-# Maximizar o número de vértices no conjunto independente
-@objective(model, Max, sum(x[i] for i ∈ 1:data.numberOfVertices))
+
+# Minimizar o número de cores utilizadas
+@objective(model, Min, sum(c[i] for i ∈ 1:data.numberOfVertices))
 
 print(model)
 

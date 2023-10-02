@@ -35,7 +35,7 @@ data = readData(file)
 
 # Se a aresta ij estiver no grafo, apenas um dos vértices pode estar no conjunto independente
 for i in 1:data.numberOfVertices
-    for j in i:data.numberOfVertices
+    for j in 1:data.numberOfVertices
         if (data.adjMatrix[i, j] == 1)
 	        @constraint(model, x[i] + x[j] <= 1)
         end
