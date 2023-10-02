@@ -24,10 +24,13 @@ function readData(file)
 end
 
 function printSolution(data, x)
-	println("Uma Cobertura Mínima:")
-	for i ∈ 1:data.numberOfObjects
-		if value(x[i]) > 0.5
-			println("$i")
+	println("Empacotamento:")
+	for i in 1:data.numberOfObjects
+		if (y[i] == 1)
+			print("CAIXA $i :")
+			for j in 1:data.numberOfObjects
+				println("$i $j ->")
+			end
 		end
 	end
 	println()
@@ -62,4 +65,4 @@ print(model)
 optimize!(model)
 
 sol = objective_value(model)
-println("Valor otimo= ", sol)
+println("Valor otimo = ", sol)
