@@ -63,7 +63,8 @@ optimize!(model)
 
 sol = objective_value(model)
 println("Valor otimo = ", sol)
-
+println("-------------")
+println("TP1 2019022553 = ", sol)
 for i in 1:data.numberOfVertices
   if value(S[i]) >= 0.5
     print("$i ")
