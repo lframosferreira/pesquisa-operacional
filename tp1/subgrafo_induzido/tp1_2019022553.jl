@@ -10,6 +10,7 @@ end
 function readData(file)
 	numberOfVertices = 0
 	adjMatrix = missing
+    weightsMatrix = missing;
 	for line in eachline(file)
 		q = split(line, "\t")
 		if (q[1] == "n")
@@ -26,7 +27,7 @@ function readData(file)
             weightsMatrix[v2, v1] = w
 		end
 	end
-	return subgrafoInduzidoData(numberOfVertices, adjMatrix)
+	return subgrafoInduzidoData(numberOfVertices, adjMatrix, weightsMatrix)
 end
 
 model = Model(HiGHS.Optimizer)
@@ -41,15 +42,22 @@ data = readData(file)
 # Aresta ij está no subgrafo induzido
 @variable(model, x[i = 1:data.numberOfVertices, j = 1:data.numberOfVertices], Bin)
 
+# A restrição de comporta como uma porta lógica AND
+# x[i, j] = S[i] and S[j]
 for i in 1:data.numberOfVertices
-    for j in 1:data.numberOfVertices
-	    @constraint(model, S[i] + S[j] >= 2 * adjMatrix[i, j])
+  for j in 1:data.numberOfVertices
+    if data.adjMatrix[i, j] == 1
+      @constraint(model, x[i, j] >= S[i] + S[j] - 1)
+      @constraint(model, x[i, j] <= S[i])
+      @constraint(model, x[i, j] <= S[j])
     end
+  end
 end
 
 
-# Minimizar o número de cores utilizadas
-@objective(model, Min, sum(S[i] * data.adjMatrix[i] for i ∈ 1:data.numberOfVertices))
+
+# Minimizar o número de cores utilizadas@objective(model, Min, sum(S[i] * data.adjMatrix[i] for i in 1:data.numberOfVertices))
+@objective(model, Max, sum(x[i, j] * data.weightsMatrix[i, j] for i in 1:data.numberOfVertices for j in 1:data.numberOfVertices))
 
 print(model)
 
@@ -57,3 +65,9 @@ optimize!(model)
 
 sol = objective_value(model)
 println("Valor otimo = ", sol)
+
+for i in 1:data.numberOfVertices
+  if value(S[i]) >= 0.5
+    print("$i ")
+  end
+end
