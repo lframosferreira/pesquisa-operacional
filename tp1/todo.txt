@@ -1,0 +1,2 @@
+1. Adicionar comentários de documentação explicando tomada de decisões
+2. Conferir se todos modelos estão tendo resultados corretos

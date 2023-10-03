@@ -16,9 +16,9 @@ function readData(file)
 			adjMatrix = zeros(Int64, numberOfVertices, numberOfVertices)
 		elseif q[1] == "e"
 			v1 = parse(Int64, q[2])
-            v2 = parse(Int64, q[3])
+			v2 = parse(Int64, q[3])
 			adjMatrix[v1, v2] = 1
-            adjMatrix[v2, v1] = 1
+			adjMatrix[v2, v1] = 1
 		end
 	end
 	return coloracaoData(numberOfVertices, adjMatrix)
@@ -39,18 +39,18 @@ data = readData(file)
 
 # Cada vértice deve estar colorido com exatamente uma cor
 for i in 1:data.numberOfVertices
-    @constraint(model, sum(x[i, j] for j in 1:data.numberOfVertices) == 1)
+	@constraint(model, sum(x[i, j] for j in 1:data.numberOfVertices) == 1)
 end
 
 # Se a aresta ij existe em E(G), as cores de i e j devem ser diferentes
 for i in 1:data.numberOfVertices
-    for j in 1:data.numberOfVertices
-        if (data.adjMatrix[i, j] == 1)
-            for color in 1:data.numberOfVertices
-	            @constraint(model, x[i,color] + x[j, color] <= c[color])
-            end
-        end
-    end
+	for j in 1:data.numberOfVertices
+		if (data.adjMatrix[i, j] == 1)
+			for color in 1:data.numberOfVertices
+				@constraint(model, x[i, color] + x[j, color] <= c[color])
+			end
+		end
+	end
 end
 
 
