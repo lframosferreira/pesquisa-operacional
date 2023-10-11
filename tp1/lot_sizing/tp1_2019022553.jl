@@ -2,7 +2,7 @@ using JuMP
 using HiGHS
 
 mutable struct lotSizingData
-  n::Int64 # número de períodos
+  numberOfPeriods::Int64 # número de períodos
   productionCosts::Array{Int64} # vetor de custos de produção por período
   demands::Array{Int64} # vetor de demanda por período
   storageCost::Array{Int64} # vetor de custos de estocagem por período
@@ -11,7 +11,24 @@ mutable struct lotSizingData
 end
 
 function readData(file)
-  print("readData")
+  numberOfPeriod = missing
+  productionCost = missing
+  demand = missing
+  storageCost = missing
+  assessmentCost = missing
+  for line in eachline(file)
+    q = line.split("\t")
+    if q[1] == "n"
+      numberOfPeriods = parse(Int64, q[2])
+      productionCost = zeros(Float64, numberOfPeriods)
+      demand = zeros(Float64, numberOfPeriods)
+      storageCost = zeros(Float64, numberOfPeriods)
+      assessmentCost = zeros(Float64, numberOfPeriods)
+    elseif q[1] == "c"
+        productionCost[parse(Int64, q[2])] = q[3] 
+    else
+    end
+  end
 end
 
 model = Model(HiGHS.Optimizer)
