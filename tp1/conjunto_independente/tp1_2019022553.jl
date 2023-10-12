@@ -30,10 +30,10 @@ file = open(ARGS[1], "r")
 
 data = readData(file)
 
-# Vértice está no conjunto independente
+# Xi é 1 se e somente se o vértice i está no conjunto independente
 @variable(model, x[i = 1:data.numberOfVertices], Bin)
 
-# Se a aresta ij estiver no grafo, apenas um dos vértices pode estar no conjunto independente
+# Resttrição para garantir que, se a aresta ij estiver no grafo, apenas um dos vértices pode estar no conjunto independente
 for i in 1:data.numberOfVertices
     for j in 1:data.numberOfVertices
         if (data.adjMatrix[i, j] == 1)

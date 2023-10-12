@@ -30,19 +30,20 @@ file = open(ARGS[1], "r")
 
 data = readData(file)
 
-# Podemos assumir que existem N cores. Ci indica que a cor i está sendo utilizada
+# Podemos assumir que existem N cores
+# Ci é igual a 1 se e somente se a cor i está sendo utilizada
 @variable(model, c[i = 1:data.numberOfVertices], Bin)
 
-# Vértice i está colorido com a cor j
+# Xij é igual a 1 se e somente se o vértice i está colorido com a cor j
 @variable(model, x[i = 1:data.numberOfVertices, j = 1:data.numberOfVertices], Bin)
 
 
-# Cada vértice deve estar colorido com exatamente uma cor
+# Restrição para garantir que cada vértice deve estar colorido com exatamente uma cor
 for i in 1:data.numberOfVertices
 	@constraint(model, sum(x[i, j] for j in 1:data.numberOfVertices) == 1)
 end
 
-# Se a aresta ij existe em E(G), as cores de i e j devem ser diferentes
+# Restrição para garantir que, se a aresta ij existe em E(G), as cores de i e j devem ser diferentes
 for i in 1:data.numberOfVertices
 	for j in 1:data.numberOfVertices
 		if (data.adjMatrix[i, j] == 1)

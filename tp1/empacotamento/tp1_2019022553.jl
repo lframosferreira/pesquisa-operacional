@@ -42,18 +42,18 @@ file = open(ARGS[1], "r")
 
 data = readData(file)
 
-# obj i na caixa j
+# Xij é 1 se e somente se o objeto i está na caixa j
 @variable(model, x[i=1:data.numberOfObjects, j=1:data.numberOfObjects], Bin)
 
-# caixa i sendo usada
+# yi é 1 se e somente se a caixa i está sendo usada
 @variable(model, y[i=1:data.numberOfObjects], Bin)
 
-# cada objeto deve estar em exatamente uma caixa
+# Restrição para garantir que cada objeto está em exatamente uma caixa
 for i in 1:data.numberOfObjects
   @constraint(model, sum(x[i, j] for j in 1:data.numberOfObjects) == 1)
 end
 
-# soma nas caixas menor que 20
+# Restrição para garantir que o peso dos objetos nas caixas é no máximo 20
 for j in 1:data.numberOfObjects
   @constraint(model, sum(data.weights[i] * x[i, j] for i ∈ 1:data.numberOfObjects) <= 20 * y[j])
 end
