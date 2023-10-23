@@ -24,8 +24,8 @@ int main(int argc, char **argv) {
    * outras colunas após isso são lixo
    */
   int number_of_restrictions, number_of_variables;
-  int cost_array[MAX_NUMBER_OF_VARIABLES];
-  int matrix[MAX_NUMBER_OF_RESTRICTIONS][MAX_NUMBER_OF_VARIABLES + 1];
+  double cost_array[MAX_NUMBER_OF_VARIABLES];
+  double matrix[MAX_NUMBER_OF_RESTRICTIONS][MAX_NUMBER_OF_VARIABLES + 1];
 
   // Parse input
 
@@ -49,9 +49,9 @@ int main(int argc, char **argv) {
     err_n_die("Error using fread on second line on input.\n");
   }
 
-  cost_array[0] = atoi(strtok(buffer, " "));
+  cost_array[0] = (double)atoi(strtok(buffer, " "));
   for (int i = 1; i < number_of_variables; i++) {
-    cost_array[i] = atoi(strtok(NULL, " "));
+    cost_array[i] = (double)atoi(strtok(NULL, " "));
   }
 
   for (int i = 0; i < number_of_restrictions; i++) {
@@ -61,9 +61,9 @@ int main(int argc, char **argv) {
       err_n_die("Error using fread on line of matrix.\n");
     }
 
-    matrix[i][0] = atoi(strtok(buffer, " "));
+    matrix[i][0] = (double)atoi(strtok(buffer, " "));
     for (int j = 1; j < number_of_variables + 1; j++) {
-      matrix[i][j] = atoi(strtok(NULL, " "));
+      matrix[i][j] = (double)atoi(strtok(NULL, " "));
     }
   }
 
@@ -72,20 +72,20 @@ int main(int argc, char **argv) {
   // End input parsing
 
   // Print input for debug
-  /* printf("%d %d\n", number_of_restrictions, number_of_variables);
+  printf("%d %d\n", number_of_restrictions, number_of_variables);
   for (int i = 0; i < number_of_variables; i++) {
-    printf("%d ", cost_array[i]);
+    printf("%f ", cost_array[i]);
   }
   printf("\n");
 
   for (int i = 0; i < number_of_restrictions; i++) {
     for (int j = 0; j < number_of_variables + 1; j++) {
-      printf("%d ", matrix[i][j]);
+      printf("%f ", matrix[i][j]);
     }
     printf("\n");
-  } */
+  }
 
-  
+
 
 
 
