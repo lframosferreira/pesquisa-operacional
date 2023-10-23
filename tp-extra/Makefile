@@ -1,17 +1,10 @@
 CC = gcc
-LIBS = -lm
-BIN = bin
-OBJ = obj
 CFLAGS = -Wall
 
-SIMPLEX = $(BIN)/simplex
-
+SIMPLEX = tpextra_2019022553.c
 
 all: $(SIMPLEX)
-
-$(SIMPLEX): simplex.c
-	test -d $(BIN) || mkdir $(BIN)
-	$(CC) $(CFLAGS) simplex.c -o $(SIMPLEX) $(LIBS)
+	$(CC) $(CFLAGS) $(SIMPLEX) -o simplex
 
 clean:
-	rm -f $(BIN)/*
+	rm -f simplex
