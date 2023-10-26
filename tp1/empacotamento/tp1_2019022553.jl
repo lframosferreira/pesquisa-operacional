@@ -60,8 +60,6 @@ end
 
 @objective(model, Min, sum(y[i] for i ∈ 1:data.numberOfObjects))
 
-print(model)
-
 optimize!(model)
 
 sol = objective_value(model)

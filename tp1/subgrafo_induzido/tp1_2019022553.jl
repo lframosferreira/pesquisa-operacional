@@ -55,8 +55,6 @@ end
 # Minimizar o número de cores utilizadas
 @objective(model, Max, sum(x[i, j] * data.weightsMatrix[i, j] for i in 1:data.numberOfVertices for j in 1:data.numberOfVertices))
 
-print(model)
-
 optimize!(model)
 
 sol = objective_value(model)

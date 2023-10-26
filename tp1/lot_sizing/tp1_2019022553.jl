@@ -42,11 +42,8 @@ model = Model(HiGHS.Optimizer)
 file = open(ARGS[1], "r")
 
 data = readData(file)
-print(data)
 
 @objective(model, Min, 3)
-
-print(model)
 
 optimize!(model)
 

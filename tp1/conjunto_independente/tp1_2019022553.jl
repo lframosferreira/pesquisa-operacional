@@ -45,8 +45,6 @@ end
 # Maximizar o número de vértices no conjunto independente
 @objective(model, Max, sum(x[i] for i ∈ 1:data.numberOfVertices))
 
-print(model)
-
 optimize!(model)
 
 sol = objective_value(model)

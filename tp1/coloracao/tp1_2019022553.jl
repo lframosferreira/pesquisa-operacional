@@ -58,8 +58,6 @@ end
 # Minimizar o número de cores utilizadas
 @objective(model, Min, sum(c[i] for i ∈ 1:data.numberOfVertices))
 
-print(model)
-
 optimize!(model)
 
 sol = objective_value(model)
