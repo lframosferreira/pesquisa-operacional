@@ -80,14 +80,10 @@ for i in 1:data.numberOfPeriods
   @constraint(model, devo[i+1] == devo[i] + data.demand[i] - pago[i])
 end
 
-@objective(model, Min, sum(prod[i] * data.productionCost[i] + est[i+1] * data.storageCost[i] + devo[i] * data.assessmentCost[i] for i in 1:data.numberOfPeriods))
+@objective(model, Min, sum(prod[i] * data.productionCost[i] + est[i+1] * data.storageCost[i] + devo[i+1] * data.assessmentCost[i] for i in 1:data.numberOfPeriods))
 
 optimize!(model)
 
 sol = objective_value(model)
 println("TP1 2019022553 = ", sol)
-
-for i in 1:data.numberOfPeriods
-  println("$(value(prod[i]))")
-end
 
