@@ -46,36 +46,41 @@ data = readData(file)
 # prod[i] é a produção do período i
 @variable(model, prod[i=1:data.numberOfPeriods] >= 0)
 
-# est[i] é o quanto eu tenho em estoque pro período i
-# assume-se que est[0] é 0
+# est[i] é o quanto existe de estoque no ínicio do período i
 @variable(model, est[i=1:data.numberOfPeriods+1] >= 0)
 
-# devo[i] é o quanto estou devendo no periodo i
+# devo[i] é o quanto ainda se deve (entrega atrasada) no início do período i
 @variable(model, devo[i=1:data.numberOfPeriods+1] >= 0)
 
-# pago[i] é o quanto paguei no período i
+# pago[i] é o quanto foi pago no período i
 @variable(model, pago[i=1:data.numberOfPeriods] >= 0)
 
-# nunca posso pagar mais do que devo somado a demanda atual (teria estoque negativo)
+# Não é possível pagar em um período mais do que o que já se devia no ínicio do período somado à demanda dele,
+# uma vez que isso causaria um 'estoque negativo'.
 for i in 1:data.numberOfPeriods
   @constraint(model, pago[i] <= devo[i] + data.demand[i])
 end
 
-# nunca posso pagar mais do que tenho
+# Não é possível pagar em um período i mais do que se tema cessível naquele período
 for i in 1:data.numberOfPeriods
   @constraint(model, pago[i] <= prod[i] + est[i])
 end
 
+# No período inicial não há como existir produtos atrasados
 @constraint(model, devo[1] == 0)
+
+# Assume-se que est[0] é 0, já que não há como possuir estoque de antes da produção começar
 @constraint(model, est[1] == 0)
+
+# No período após o final não pode existir produtos atrasados. Isto é, todas as demandas devem ser satisfeitas ao acabar o período de tempo
 @constraint(model, devo[data.numberOfPeriods+1] == 0)
 
-# est pro proximo periodo é prod + est - pago
+# O estoque no início do próximo período é igual a quantidade disponível no período anterior subtraída de quanto foi pago aos clientes no período anterior
 for i in 1:data.numberOfPeriods
   @constraint(model, est[i+1] == prod[i] + est[i] - pago[i])
 end
 
-# devo é qnt devia antes + demanda menos pago
+# A quantidade de produto atrasado no início do próximo período é igual a quantidade total que se deve no período anterior subtráida de quanto foi pago aos clientes
 for i in 1:data.numberOfPeriods
   @constraint(model, devo[i+1] == devo[i] + data.demand[i] - pago[i])
 end
