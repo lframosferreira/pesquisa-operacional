@@ -39,8 +39,6 @@ void tableau(
     int base[MAX_NUMBER_OF_VARIABLES + MAX_NUMBER_OF_RESTRICTIONS +
              MAX_NUMBER_OF_RESTRICTIONS]) {
 
-    
-
   // reverte sinais de ct
   for (int i = MAX_NUMBER_OF_RESTRICTIONS;
        i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
@@ -49,16 +47,7 @@ void tableau(
     matrix[0][i] *= -1;
   }
 
-  
-
   for (;;) {
-
-    for (int i = 0; i < number_of_variables + number_of_restrictions; i++){
-      printf("%d ", base[i]);
-    }
-    printf("\n");
-    print_matrix(matrix, number_of_restrictions, number_of_variables);
-    printf("-------------------------------------------------------------\n");
 
     int col = -1;
     for (int i = MAX_NUMBER_OF_RESTRICTIONS;
@@ -96,7 +85,7 @@ void tableau(
         }
       }
       for (int i = 0; i < number_of_variables; i++) {
-        if (i == number_of_variables  - 1) {
+        if (i == number_of_variables - 1) {
           fprintf(stdout, "%lf\n", solucao[i]);
         } else {
           fprintf(stdout, "%lf ", solucao[i]);
@@ -125,9 +114,50 @@ void tableau(
       }
     }
 
-
     if (ratio == -1) {
-      fprintf(stdout, "ILIMITADA tableau\n");
+      fprintf(stdout, "ilimitada\n");
+
+      double solucao_viavel[MAX_NUMBER_OF_VARIABLES +
+                            MAX_NUMBER_OF_RESTRICTIONS] = {0};
+      double certificado_inviabilidade[MAX_NUMBER_OF_VARIABLES +
+                                       MAX_NUMBER_OF_RESTRICTIONS] = {0};
+      certificado_inviabilidade[col - MAX_NUMBER_OF_RESTRICTIONS] = 1;
+
+      print_matrix(matrix, number_of_restrictions, number_of_variables);
+
+      for (int i = 0; i < number_of_variables + number_of_restrictions; i++) {
+        if (base[i] == 1) {
+          int linha_com_1;
+          for (int j = 1; j < number_of_restrictions + 1; j++) {
+            if (matrix[j][MAX_NUMBER_OF_RESTRICTIONS + i] == 1) {
+              linha_com_1 = j;
+              break;
+            }
+          }
+
+          solucao_viavel[i] =
+              matrix[linha_com_1][MAX_NUMBER_OF_RESTRICTIONS +
+                                  number_of_variables + number_of_restrictions];
+          certificado_inviabilidade[linha_com_1] =
+              -1 * matrix[linha_com_1][col];
+        }
+      }
+      for (int i = 0; i < number_of_variables; i++) {
+        if (i == number_of_variables - 1) {
+          fprintf(stdout, "%lf\n", solucao_viavel[i]);
+        } else {
+          fprintf(stdout, "%lf ", solucao_viavel[i]);
+        }
+      }
+
+      for (int i = 0; i < number_of_variables; i++) {
+        if (i == number_of_variables - 1) {
+          fprintf(stdout, "%lf\n", certificado_inviabilidade[i]);
+        } else {
+          fprintf(stdout, "%lf ", certificado_inviabilidade[i]);
+        }
+      }
+
       return;
     }
 
@@ -136,7 +166,8 @@ void tableau(
          i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                  number_of_restrictions;
          i++) {
-      if (base[i - MAX_NUMBER_OF_RESTRICTIONS] == 1 && matrix[min_ratio_line][i] == 1.0 && col != i) {
+      if (base[i - MAX_NUMBER_OF_RESTRICTIONS] == 1 &&
+          matrix[min_ratio_line][i] == 1.0 && col != i) {
         base[i - MAX_NUMBER_OF_RESTRICTIONS] = 0;
         break;
       }
@@ -176,9 +207,9 @@ int auxiliar(
              MAX_NUMBER_OF_RESTRICTIONS]) {
 
   double matrix_auxiliar[MAX_NUMBER_OF_RESTRICTIONS + 1]
-                     [MAX_NUMBER_OF_RESTRICTIONS + MAX_NUMBER_OF_VARIABLES +
-                      MAX_NUMBER_OF_RESTRICTIONS + MAX_NUMBER_OF_RESTRICTIONS +
-                      1] = {0};
+                        [MAX_NUMBER_OF_RESTRICTIONS + MAX_NUMBER_OF_VARIABLES +
+                         MAX_NUMBER_OF_RESTRICTIONS +
+                         MAX_NUMBER_OF_RESTRICTIONS + 1] = {0};
   for (int i = 1; i < number_of_restrictions + 1; i++) {
     for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
          j < MAX_NUMBER_OF_RESTRICTIONS + number_of_restrictions +
@@ -189,13 +220,17 @@ int auxiliar(
   }
 
   // PREENCHE IDENTIDADE DA BASE NOVA
-  for (int i = 1; i < number_of_restrictions + 1; i++){
-      matrix_auxiliar[i][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables + number_of_restrictions + i - 1] = 1;
+  for (int i = 1; i < number_of_restrictions + 1; i++) {
+    matrix_auxiliar[i][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                       number_of_restrictions + i - 1] = 1;
   }
 
   /* preenche coluna de b */
-  for (int i = 1; i < number_of_restrictions + 1; i++){
-    matrix_auxiliar[i][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables + number_of_restrictions + number_of_restrictions] = matrix[i][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables + number_of_restrictions];
+  for (int i = 1; i < number_of_restrictions + 1; i++) {
+    matrix_auxiliar[i][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                       number_of_restrictions + number_of_restrictions] =
+        matrix[i][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                  number_of_restrictions];
   }
 
   // popula ct com valores da auxiliar ja invertidos pro tableau
@@ -208,8 +243,11 @@ int auxiliar(
   }
 
   // torna base viavel zerando em c
-  for (int i = 1; i < number_of_restrictions + 1; i++){
-    for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions; j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables + number_of_restrictions + number_of_restrictions + 1; j++){
+  for (int i = 1; i < number_of_restrictions + 1; i++) {
+    for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
+         j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                 number_of_restrictions + number_of_restrictions + 1;
+         j++) {
       matrix_auxiliar[0][j] -= matrix_auxiliar[i][j];
     }
   }
@@ -228,15 +266,17 @@ int auxiliar(
     }
 
     if (col == -1) { // auxiliar achou otimo, checar dois casos
-      if (matrix_auxiliar[0][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables + number_of_restrictions + number_of_restrictions] == 0){
+      if (matrix_auxiliar[0][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                             number_of_restrictions + number_of_restrictions] ==
+          0) {
         return 1;
-      }
-      else {
+      } else {
         fprintf(stdout, "inviavel\n");
-        for (int i = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions; i < MAX_NUMBER_OF_RESTRICTIONS; i++){
-          if (i == MAX_NUMBER_OF_RESTRICTIONS - 1){
+        for (int i = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
+             i < MAX_NUMBER_OF_RESTRICTIONS; i++) {
+          if (i == MAX_NUMBER_OF_RESTRICTIONS - 1) {
             fprintf(stdout, "%lf\n", matrix_auxiliar[0][i]);
-          }else {
+          } else {
             fprintf(stdout, "%lf ", matrix_auxiliar[0][i]);
           }
         }
@@ -266,7 +306,8 @@ int auxiliar(
          i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                  number_of_restrictions;
          i++) {
-      if (base[i - MAX_NUMBER_OF_RESTRICTIONS] == 1 && matrix[min_ratio_line][i] == 1.0 && col != i) {
+      if (base[i - MAX_NUMBER_OF_RESTRICTIONS] == 1 &&
+          matrix[min_ratio_line][i] == 1.0 && col != i) {
         base[i - MAX_NUMBER_OF_RESTRICTIONS] = 0;
         break;
       }
@@ -374,8 +415,8 @@ int main(int argc, char **argv) {
 
   /* Programação linear lida do arquivo */
 
-/*   print_matrix(matrix, number_of_restrictions, number_of_variables);
- */
+  /*   print_matrix(matrix, number_of_restrictions, number_of_variables);
+   */
   /* Checa se alguma entrada no vetor b é negativa.Se sim,
       devemos colocar as folgas,
       montar a PL auxiliar para descobrir uma base viável. */
@@ -390,11 +431,11 @@ int main(int argc, char **argv) {
                   number_of_restrictions] < 0) {
       neg_b++;
       for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
-         j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
-                 number_of_restrictions + 1;
-         j++) {
-      matrix[neg_b][j] *= -1;
-    }
+           j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                   number_of_restrictions + 1;
+           j++) {
+        matrix[neg_b][j] *= -1;
+      }
     }
   }
 
@@ -413,10 +454,11 @@ int main(int argc, char **argv) {
          i++) {
       base[i] = 1;
     }
-    aux_res = auxiliar(matrix, number_of_restrictions, number_of_variables, base);
+    aux_res =
+        auxiliar(matrix, number_of_restrictions, number_of_variables, base);
   }
 
-  if (aux_res != 0){
+  if (aux_res != 0) {
     tableau(matrix, number_of_restrictions, number_of_variables, base);
   }
 
