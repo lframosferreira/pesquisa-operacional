@@ -7,7 +7,7 @@ all: $(SIMPLEX)
 	$(CC) $(CFLAGS) $(SIMPLEX) -o simplex
 
 test:
-	./simplex tests/ENTRADA_example_01
+	./simplex tests/ENTRADA_example_04
 
 clean:
 	rm -f simplex

@@ -18,7 +18,7 @@ void print_matrix(
          j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                  number_of_restrictions + 1;
          j++) {
-      printf("%f ", matrix[i][j]);
+      printf("%+06.2lf ", matrix[i][j]);
     }
     printf("\n");
   }
@@ -39,6 +39,8 @@ void tableau(
     int base[MAX_NUMBER_OF_VARIABLES + MAX_NUMBER_OF_RESTRICTIONS +
              MAX_NUMBER_OF_RESTRICTIONS]) {
 
+    
+
   // reverte sinais de ct
   for (int i = MAX_NUMBER_OF_RESTRICTIONS;
        i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
@@ -47,7 +49,17 @@ void tableau(
     matrix[0][i] *= -1;
   }
 
+  
+
   for (;;) {
+
+    for (int i = 0; i < number_of_variables + number_of_restrictions; i++){
+      printf("%d ", base[i]);
+    }
+    printf("\n");
+    print_matrix(matrix, number_of_restrictions, number_of_variables);
+    printf("-------------------------------------------------------------\n");
+
     int col = -1;
     for (int i = MAX_NUMBER_OF_RESTRICTIONS;
          i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
@@ -59,10 +71,7 @@ void tableau(
       }
     }
 
-    for (int i = 0; i < number_of_variables + number_of_restrictions; i++) {
-      printf("%d ", base[i]);
-    }
-    printf("\n");
+    /* Achamos o ótimo */
     if (col == -1) {
       print_matrix(matrix, number_of_restrictions, number_of_variables);
       fprintf(stdout, "otimo\n");
@@ -75,7 +84,7 @@ void tableau(
         if (base[i] == 1) {
           int linha_com_1;
           for (int j = 1; j < number_of_restrictions + 1; j++) {
-            if (j == 1) {
+            if (matrix[j][MAX_NUMBER_OF_RESTRICTIONS + i] == 1) {
               linha_com_1 = j;
               break;
             }
@@ -86,8 +95,8 @@ void tableau(
                                   number_of_variables + number_of_restrictions];
         }
       }
-      for (int i = 0; i < number_of_variables + number_of_restrictions; i++) {
-        if (i == number_of_variables + number_of_restrictions - 1) {
+      for (int i = 0; i < number_of_variables; i++) {
+        if (i == number_of_variables  - 1) {
           fprintf(stdout, "%lf\n", solucao[i]);
         } else {
           fprintf(stdout, "%lf ", solucao[i]);
@@ -116,6 +125,7 @@ void tableau(
       }
     }
 
+
     if (ratio == -1) {
       fprintf(stdout, "ILIMITADA\n");
       return;
@@ -126,12 +136,12 @@ void tableau(
          i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                  number_of_restrictions;
          i++) {
-      if (base[i] == 1 && min_ratio_line == 1 && col != i) {
-        base[i] = 0;
+      if (base[i - MAX_NUMBER_OF_RESTRICTIONS] == 1 && matrix[min_ratio_line][i] == 1.0 && col != i) {
+        base[i - MAX_NUMBER_OF_RESTRICTIONS] = 0;
         break;
       }
     }
-    base[col] = 1;
+    base[col - MAX_NUMBER_OF_RESTRICTIONS] = 1;
 
     // pivoteia linha
     for (int i = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
@@ -334,8 +344,8 @@ int main(int argc, char **argv) {
 
   /* Programação linear lida do arquivo */
 
-  print_matrix(matrix, number_of_restrictions, number_of_variables);
-
+/*   print_matrix(matrix, number_of_restrictions, number_of_variables);
+ */
   /* Checa se alguma entrada no vetor b é negativa.Se sim,
       devemos colocar as folgas,
       montar a PL auxiliar para descobrir uma base viável. */
