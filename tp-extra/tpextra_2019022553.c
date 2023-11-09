@@ -1,7 +1,7 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 #define BUFFER_SIZE 2048
 #define MAX_NUMBER_OF_RESTRICTIONS 100
@@ -30,6 +30,10 @@ void err_n_die(const char *msg) {
   exit(EXIT_FAILURE);
 }
 
+/* Salvo ela globalmente caso seja ilimitada no final das contas */
+double solucao_viavel[MAX_NUMBER_OF_VARIABLES + MAX_NUMBER_OF_RESTRICTIONS] = {
+    0};
+
 /* Assume que já existe uma base viável canônica na matriz.
 Assume-se que essa base já tem identidade e que b >= 0 */
 void tableau(
@@ -49,6 +53,10 @@ void tableau(
   }
 
   for (;;) {
+
+    print_matrix(matrix, number_of_restrictions, number_of_variables);
+    printf("-------------------------------------------------------------------"
+           "-------------------\n");
 
     int col = -1;
     for (int i = MAX_NUMBER_OF_RESTRICTIONS;
@@ -109,7 +117,10 @@ void tableau(
     int min_ratio_line = -1;
     for (int i = 1; i < number_of_restrictions + 1; i++) {
       if (matrix[i][col] > 0) {
-        double new_ratio = matrix[i][number_of_variables + 1] / matrix[i][col];
+        double new_ratio =
+            matrix[i][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                      number_of_restrictions] /
+            matrix[i][col];
         if (ratio != -1 && ratio <= new_ratio) {
           continue;
         } else {
@@ -122,8 +133,6 @@ void tableau(
     if (ratio == -1) {
       fprintf(stdout, "ilimitada\n");
 
-      double solucao_viavel[MAX_NUMBER_OF_VARIABLES +
-                            MAX_NUMBER_OF_RESTRICTIONS] = {0};
       double certificado_inviabilidade[MAX_NUMBER_OF_VARIABLES +
                                        MAX_NUMBER_OF_RESTRICTIONS] = {0};
       certificado_inviabilidade[col - MAX_NUMBER_OF_RESTRICTIONS] = 1;
@@ -138,9 +147,6 @@ void tableau(
             }
           }
 
-          solucao_viavel[i] =
-              matrix[linha_com_1][MAX_NUMBER_OF_RESTRICTIONS +
-                                  number_of_variables + number_of_restrictions];
           certificado_inviabilidade[linha_com_1] =
               -1 * matrix[linha_com_1][col];
         }
@@ -258,12 +264,25 @@ int auxiliar(
 
   for (;;) {
 
+    /* for (int i = 0; i < number_of_restrictions + 1; i++) {
+      for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
+           j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                   2 * number_of_restrictions + 1;
+           j++) {
+        printf("%+06.2lf ", matrix_auxiliar[i][j]);
+      }
+      printf("\n");
+    }
+    printf("-------------------------------------------------------------------"
+           "---------------------------\n"); */
+
     int col = -1;
     for (int i = MAX_NUMBER_OF_RESTRICTIONS;
          i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                  number_of_restrictions + number_of_restrictions;
          i++) {
-      if (matrix_auxiliar[0][i] < 0 && base[i] == 0) {
+      if (matrix_auxiliar[0][i] < 0 && fabs(matrix_auxiliar[0][i]) > 10e-4 &&
+          base[i] == 0) {
         col = i;
         break;
       }
@@ -271,9 +290,28 @@ int auxiliar(
 
     if (col == -1) { // auxiliar achou otimo, checar dois casos
       /* Aqui eu dou round pq erro numerico pode atrapalhar a checagem */
-      if (round(matrix_auxiliar[0][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
-                             number_of_restrictions + number_of_restrictions]) ==
-          0.0) {
+      if (round(
+              matrix_auxiliar[0][MAX_NUMBER_OF_RESTRICTIONS +
+                                 number_of_variables + number_of_restrictions +
+                                 number_of_restrictions]) == 0.0) {
+        for (int i = 0; i < number_of_restrictions + number_of_variables; i++)
+
+        for (int i = 0; i < number_of_variables + number_of_restrictions; i++) {
+          if (base[i] == 1) {
+            int linha_com_1;
+            for (int j = 1; j < number_of_restrictions + 1; j++) {
+              if (matrix_auxiliar[j][MAX_NUMBER_OF_RESTRICTIONS + i] == 1) {
+                linha_com_1 = j;
+                break;
+              }
+            }
+            solucao_viavel[i] =
+                matrix_auxiliar[linha_com_1]
+                               [MAX_NUMBER_OF_RESTRICTIONS +
+                                number_of_variables + number_of_restrictions +
+                                number_of_restrictions];
+          }
+        }
         return 1;
       } else {
 
@@ -295,8 +333,11 @@ int auxiliar(
     int min_ratio_line = -1;
     for (int i = 1; i < number_of_restrictions + 1; i++) {
       if (matrix_auxiliar[i][col] > 0) {
-        double new_ratio = matrix_auxiliar[i][number_of_variables + 1] /
-                           matrix_auxiliar[i][col];
+        double new_ratio =
+            matrix_auxiliar[i]
+                           [MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                            number_of_restrictions + number_of_restrictions] /
+            matrix_auxiliar[i][col];
         if (ratio != -1 && ratio <= new_ratio) {
           continue;
         } else {
@@ -307,8 +348,8 @@ int auxiliar(
     }
 
     if (ratio == -1) { // nunca vai cair pq auxiliar é limitada
-      fprintf(stdout, "ILIMITADA aux\n");
-      return -1;
+      fprintf(stdout, "Auxiliar deu ilimitada, algo esta errado\n");
+      exit(EXIT_SUCCESS);
     }
 
     /* Atualiza a base */
@@ -317,7 +358,7 @@ int auxiliar(
                  number_of_restrictions + number_of_restrictions;
          i++) {
       if (base[i - MAX_NUMBER_OF_RESTRICTIONS] == 1 &&
-          matrix[min_ratio_line][i] == 1.0 && col != i) {
+          matrix_auxiliar[min_ratio_line][i] == 1.0 && col != i) {
         base[i - MAX_NUMBER_OF_RESTRICTIONS] = 0;
         break;
       }
