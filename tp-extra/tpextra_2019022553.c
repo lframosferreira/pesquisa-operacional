@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define BUFFER_SIZE 2048
 #define MAX_NUMBER_OF_RESTRICTIONS 100
@@ -62,7 +63,7 @@ void tableau(
 
     /* Achamos o ótimo */
     if (col == -1) {
-      print_matrix(matrix, number_of_restrictions, number_of_variables);
+
       fprintf(stdout, "otimo\n");
       fprintf(stdout, "%lf\n",
               matrix[0][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
@@ -109,8 +110,12 @@ void tableau(
     for (int i = 1; i < number_of_restrictions + 1; i++) {
       if (matrix[i][col] > 0) {
         double new_ratio = matrix[i][number_of_variables + 1] / matrix[i][col];
-        ratio = ratio != -1 && ratio <= new_ratio ? ratio : new_ratio;
-        min_ratio_line = i;
+        if (ratio != -1 && ratio <= new_ratio) {
+          continue;
+        } else {
+          ratio = new_ratio;
+          min_ratio_line = i;
+        }
       }
     }
 
@@ -122,8 +127,6 @@ void tableau(
       double certificado_inviabilidade[MAX_NUMBER_OF_VARIABLES +
                                        MAX_NUMBER_OF_RESTRICTIONS] = {0};
       certificado_inviabilidade[col - MAX_NUMBER_OF_RESTRICTIONS] = 1;
-
-      print_matrix(matrix, number_of_restrictions, number_of_variables);
 
       for (int i = 0; i < number_of_variables + number_of_restrictions; i++) {
         if (base[i] == 1) {
@@ -175,11 +178,12 @@ void tableau(
     base[col - MAX_NUMBER_OF_RESTRICTIONS] = 1;
 
     // pivoteia linha
+    double ratio_to_divide = matrix[min_ratio_line][col];
     for (int i = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
          i < MAX_NUMBER_OF_VARIABLES + number_of_variables +
                  number_of_restrictions + 1;
          i++) {
-      matrix[min_ratio_line][i] /= matrix[min_ratio_line][col];
+      matrix[min_ratio_line][i] /= ratio_to_divide;
     }
 
     // zera resto da coluna
@@ -266,11 +270,13 @@ int auxiliar(
     }
 
     if (col == -1) { // auxiliar achou otimo, checar dois casos
-      if (matrix_auxiliar[0][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
-                             number_of_restrictions + number_of_restrictions] ==
-          0) {
+      /* Aqui eu dou round pq erro numerico pode atrapalhar a checagem */
+      if (round(matrix_auxiliar[0][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                             number_of_restrictions + number_of_restrictions]) ==
+          0.0) {
         return 1;
       } else {
+
         fprintf(stdout, "inviavel\n");
         for (int i = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
              i < MAX_NUMBER_OF_RESTRICTIONS; i++) {
@@ -291,20 +297,24 @@ int auxiliar(
       if (matrix_auxiliar[i][col] > 0) {
         double new_ratio = matrix_auxiliar[i][number_of_variables + 1] /
                            matrix_auxiliar[i][col];
-        ratio = ratio != -1 && ratio <= new_ratio ? ratio : new_ratio;
-        min_ratio_line = i;
+        if (ratio != -1 && ratio <= new_ratio) {
+          continue;
+        } else {
+          ratio = new_ratio;
+          min_ratio_line = i;
+        }
       }
     }
 
     if (ratio == -1) { // nunca vai cair pq auxiliar é limitada
-      fprintf(stdout, "ILIMITAD aux\n");
+      fprintf(stdout, "ILIMITADA aux\n");
       return -1;
     }
 
     /* Atualiza a base */
     for (int i = MAX_NUMBER_OF_RESTRICTIONS;
          i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
-                 number_of_restrictions;
+                 number_of_restrictions + number_of_restrictions;
          i++) {
       if (base[i - MAX_NUMBER_OF_RESTRICTIONS] == 1 &&
           matrix[min_ratio_line][i] == 1.0 && col != i) {
@@ -314,13 +324,14 @@ int auxiliar(
     }
     base[col - MAX_NUMBER_OF_RESTRICTIONS] = 1;
 
+    double ratio_to_divide = matrix_auxiliar[min_ratio_line][col];
     // pivoteia linha
     for (int i = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
-         i < MAX_NUMBER_OF_VARIABLES + number_of_variables +
+         i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                  number_of_restrictions + number_of_restrictions + 1;
          i++) {
-      matrix_auxiliar[min_ratio_line][i] /=
-          matrix_auxiliar[min_ratio_line][col];
+
+      matrix_auxiliar[min_ratio_line][i] /= ratio_to_divide;
     }
 
     // zera resto da coluna
@@ -413,10 +424,6 @@ int main(int argc, char **argv) {
 
   fclose(fp);
 
-  /* Programação linear lida do arquivo */
-
-  /*   print_matrix(matrix, number_of_restrictions, number_of_variables);
-   */
   /* Checa se alguma entrada no vetor b é negativa.Se sim,
       devemos colocar as folgas,
       montar a PL auxiliar para descobrir uma base viável. */
@@ -425,16 +432,18 @@ int main(int argc, char **argv) {
            MAX_NUMBER_OF_RESTRICTIONS] = {0};
 
   int neg_b = 0;
+  int neg_b_line;
   for (int i = 1; i < number_of_restrictions + 1; i++) {
 
     if (matrix[i][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                   number_of_restrictions] < 0) {
       neg_b++;
+      neg_b_line = i;
       for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
            j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                    number_of_restrictions + 1;
            j++) {
-        matrix[neg_b][j] *= -1;
+        matrix[neg_b_line][j] *= -1;
       }
     }
   }
@@ -447,13 +456,14 @@ int main(int argc, char **argv) {
       base[i] = 1;
     }
   } else {
-
     for (int i = number_of_variables + number_of_restrictions;
          i <
          number_of_variables + number_of_restrictions + number_of_restrictions;
          i++) {
       base[i] = 1;
     }
+
+    // multiplica por -1
     aux_res =
         auxiliar(matrix, number_of_restrictions, number_of_variables, base);
   }
