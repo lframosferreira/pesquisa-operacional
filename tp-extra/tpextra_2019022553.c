@@ -44,13 +44,13 @@ void tableau(
     int base[MAX_NUMBER_OF_VARIABLES + MAX_NUMBER_OF_RESTRICTIONS +
              MAX_NUMBER_OF_RESTRICTIONS]) {
 
-  // reverte sinais de ct
+  /* // reverte sinais de ct
   for (int i = MAX_NUMBER_OF_RESTRICTIONS;
        i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                number_of_restrictions;
        i++) {
     matrix[0][i] *= -1;
-  }
+  } */
 
   for (;;) {
 
@@ -154,6 +154,10 @@ void tableau(
             exit(0);
           }
           certificado_ilimitada[i] = -1 * matrix[linha_com_1][col];
+
+          solucao_viavel[i] =
+              matrix[linha_com_1][MAX_NUMBER_OF_RESTRICTIONS +
+                                  number_of_restrictions + number_of_variables];
         }
       }
       for (int i = 0; i < number_of_variables; i++) {
@@ -257,12 +261,23 @@ int auxiliar(
     matrix_auxiliar[0][i] = 1;
   }
 
-  // garante que VERO da auxiliar tem identidade no inicio
-  int linha = 1;
-  for (int i = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
-       i < MAX_NUMBER_OF_RESTRICTIONS; i++) {
-    matrix_auxiliar[linha][i] = 1;
-    linha++;
+  // onde b é neg multiplica linha na auxiliar
+  for (int i = 1; i < number_of_restrictions + 1; i++) {
+
+    if (matrix_auxiliar[i][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                           number_of_restrictions + number_of_restrictions] <
+        0) {
+      int neg_b_line = i;
+      for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
+           j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                   number_of_restrictions;
+           j++) {
+        matrix_auxiliar[neg_b_line][j] *= -1;
+      }
+      matrix_auxiliar[neg_b_line][MAX_NUMBER_OF_RESTRICTIONS +
+                                  number_of_variables + number_of_restrictions +
+                                  number_of_restrictions] *= -1;
+    }
   }
 
   // torna base viavel zerando em c
@@ -294,8 +309,8 @@ int auxiliar(
          i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                  number_of_restrictions + number_of_restrictions;
          i++) {
-      if (matrix_auxiliar[0][i] < 0 && fabs(matrix_auxiliar[0][i]) > 10e-4 &&
-          base[i] == 0) {
+
+      if (matrix_auxiliar[0][i] < 0 && base[i] == 0) {
         col = i;
         break;
       }
@@ -322,11 +337,6 @@ int auxiliar(
                      "viavel\n");
               exit(0);
             }
-            solucao_viavel[i] =
-                matrix_auxiliar[linha_com_1]
-                               [MAX_NUMBER_OF_RESTRICTIONS +
-                                number_of_variables + number_of_restrictions +
-                                number_of_restrictions];
           }
         }
 
@@ -343,7 +353,7 @@ int auxiliar(
             {0};
 
         for (int i = 1; i < number_of_restrictions + 1; i++) {
-          for (int j = MAX_NUMBER_OF_RESTRICTIONS;
+          for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
                j < MAX_NUMBER_OF_RESTRICTIONS + number_of_restrictions +
                        number_of_variables + 1;
                j++) {
@@ -355,8 +365,9 @@ int auxiliar(
             }
           }
         }
+
         for (int i = 1; i < number_of_restrictions + 1; i++) {
-          for (int j = MAX_NUMBER_OF_RESTRICTIONS;
+          for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
                j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                        number_of_restrictions + 1;
                j++) {
@@ -375,7 +386,6 @@ int auxiliar(
                 break;
               }
             }
-
             if (linha_com_1 == -1) {
               printf(
                   "linha_com_1 igual a -1, nao achei a base do jeito certo\n");
@@ -431,6 +441,65 @@ int auxiliar(
 
     if (ratio == -1) { // nunca vai cair pq auxiliar é limitada
       fprintf(stdout, "Auxiliar deu ilimitada, algo esta errado\n");
+
+      // logica de multiplciar plea inversa e zerar ct nas bases repetida do
+      // caso anterior
+
+      double result[MAX_NUMBER_OF_RESTRICTIONS][MAX_NUMBER_OF_RESTRICTIONS +
+                                                MAX_NUMBER_OF_VARIABLES + 1] = {
+          0};
+
+      for (int i = 1; i < number_of_restrictions + 1; i++) {
+        for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
+             j < MAX_NUMBER_OF_RESTRICTIONS + number_of_restrictions +
+                     number_of_variables + 1;
+             j++) {
+          for (int k = 1; k < number_of_restrictions + 1; k++) {
+            result[i][j] +=
+                matrix_auxiliar[i][k - 1 + MAX_NUMBER_OF_RESTRICTIONS -
+                                   number_of_restrictions] *
+                matrix[k][j];
+          }
+        }
+      }
+
+      for (int i = 1; i < number_of_restrictions + 1; i++) {
+        for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
+             j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                     number_of_restrictions + 1;
+             j++) {
+          matrix[i][j] = result[i][j];
+        }
+      }
+
+      for (int i = 0; i < number_of_variables + number_of_restrictions; i++) {
+        if (base[i] == 1) {
+          int linha_com_1 = -1;
+
+          for (int j = 1; j < number_of_restrictions + 1; j++) {
+            if (fabs(matrix[j][i + MAX_NUMBER_OF_RESTRICTIONS] - 1) <= 10e-4) {
+              linha_com_1 = j;
+              break;
+            }
+          }
+          if (linha_com_1 == -1) {
+            printf("linha_com_1 igual a -1, nao achei a base do jeito certo\n");
+            exit(0);
+          }
+
+          double value_to_multiply = matrix[0][i + MAX_NUMBER_OF_RESTRICTIONS];
+          for (int k = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
+               k < MAX_NUMBER_OF_RESTRICTIONS + number_of_restrictions +
+                       number_of_variables + 1;
+               k++) {
+            matrix[0][k] =
+                matrix[0][k] - value_to_multiply * matrix[linha_com_1][k];
+          }
+        }
+      }
+
+      return 1; // retorno 1 pq nao vai importat mt, em tese so cai aqui cm erro
+                // numerico desconsideravel em c ~ 0
       exit(EXIT_SUCCESS);
     }
 
@@ -551,23 +620,30 @@ int main(int argc, char **argv) {
       devemos colocar as folgas,
       montar a PL auxiliar para descobrir uma base viável. */
 
+  // reverte sinais de ct ja
+  for (int i = MAX_NUMBER_OF_RESTRICTIONS;
+       i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+               number_of_restrictions;
+       i++) {
+    matrix[0][i] *= -1;
+  }
+
   int base[MAX_NUMBER_OF_VARIABLES + MAX_NUMBER_OF_RESTRICTIONS +
            MAX_NUMBER_OF_RESTRICTIONS] = {0};
 
   int neg_b = 0;
-  int neg_b_line;
   for (int i = 1; i < number_of_restrictions + 1; i++) {
 
     if (matrix[i][MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                   number_of_restrictions] < 0) {
       neg_b++;
-      neg_b_line = i;
+      /* neg_b_line = i;
       for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
            j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                    number_of_restrictions + 1;
            j++) {
         matrix[neg_b_line][j] *= -1;
-      }
+      } */
     }
   }
 
