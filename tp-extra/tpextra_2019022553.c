@@ -369,7 +369,8 @@ int auxiliar(
             int linha_com_1 = -1;
 
             for (int j = 1; j < number_of_restrictions + 1; j++) {
-              if (fabs(matrix[j][i + MAX_NUMBER_OF_RESTRICTIONS] - 1) <= 10e-4) {
+              if (fabs(matrix[j][i + MAX_NUMBER_OF_RESTRICTIONS] - 1) <=
+                  10e-4) {
                 linha_com_1 = j;
                 break;
               }
@@ -380,13 +381,15 @@ int auxiliar(
                   "linha_com_1 igual a -1, nao achei a base do jeito certo\n");
               exit(0);
             }
+
+            double value_to_multiply =
+                matrix[0][i + MAX_NUMBER_OF_RESTRICTIONS];
             for (int k = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
                  k < MAX_NUMBER_OF_RESTRICTIONS + number_of_restrictions +
                          number_of_variables + 1;
                  k++) {
               matrix[0][k] =
-                  matrix[0][k] - matrix[0][i + MAX_NUMBER_OF_RESTRICTIONS] *
-                                     matrix[linha_com_1][k];
+                  matrix[0][k] - value_to_multiply * matrix[linha_com_1][k];
             }
           }
         }
