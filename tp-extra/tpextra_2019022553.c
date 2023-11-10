@@ -133,9 +133,10 @@ void tableau(
     if (ratio == -1) {
       fprintf(stdout, "ilimitada\n");
 
-      double certificado_inviabilidade[MAX_NUMBER_OF_VARIABLES +
-                                       MAX_NUMBER_OF_RESTRICTIONS] = {0};
-      certificado_inviabilidade[col - MAX_NUMBER_OF_RESTRICTIONS] = 1;
+      double certificado_ilimitada[MAX_NUMBER_OF_VARIABLES +
+                                   MAX_NUMBER_OF_RESTRICTIONS] = {0};
+
+      certificado_ilimitada[col - MAX_NUMBER_OF_RESTRICTIONS] = 1;
 
       for (int i = 0; i < number_of_variables + number_of_restrictions; i++) {
         if (base[i] == 1) {
@@ -147,8 +148,7 @@ void tableau(
             }
           }
 
-          certificado_inviabilidade[linha_com_1] =
-              -1 * matrix[linha_com_1][col];
+          certificado_ilimitada[linha_com_1] = -1 * matrix[linha_com_1][col];
         }
       }
       for (int i = 0; i < number_of_variables; i++) {
@@ -161,9 +161,9 @@ void tableau(
 
       for (int i = 0; i < number_of_variables; i++) {
         if (i == number_of_variables - 1) {
-          fprintf(stdout, "%lf\n", certificado_inviabilidade[i]);
+          fprintf(stdout, "%lf\n", certificado_ilimitada[i]);
         } else {
-          fprintf(stdout, "%lf ", certificado_inviabilidade[i]);
+          fprintf(stdout, "%lf ", certificado_ilimitada[i]);
         }
       }
 
@@ -252,6 +252,15 @@ int auxiliar(
     matrix_auxiliar[0][i] = 1;
   }
 
+  // garante que VERO da auxiliar tem identidade no inicio
+  int linha = 1;
+  for (int i = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions; i < MAX_NUMBER_OF_RESTRICTIONS; i++){
+    matrix_auxiliar[linha][i] = 1;
+    linha++;
+  }
+
+
+
   // torna base viavel zerando em c
   for (int i = 1; i < number_of_restrictions + 1; i++) {
     for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
@@ -262,9 +271,11 @@ int auxiliar(
     }
   }
 
+  
+
   for (;;) {
 
-    /* for (int i = 0; i < number_of_restrictions + 1; i++) {
+    for (int i = 0; i < number_of_restrictions + 1; i++) {
       for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
            j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                    2 * number_of_restrictions + 1;
@@ -274,7 +285,7 @@ int auxiliar(
       printf("\n");
     }
     printf("-------------------------------------------------------------------"
-           "---------------------------\n"); */
+           "---------------------------\n");
 
     int col = -1;
     for (int i = MAX_NUMBER_OF_RESTRICTIONS;
@@ -294,7 +305,6 @@ int auxiliar(
               matrix_auxiliar[0][MAX_NUMBER_OF_RESTRICTIONS +
                                  number_of_variables + number_of_restrictions +
                                  number_of_restrictions]) == 0.0) {
-        for (int i = 0; i < number_of_restrictions + number_of_variables; i++)
 
         for (int i = 0; i < number_of_variables + number_of_restrictions; i++) {
           if (base[i] == 1) {
@@ -312,6 +322,47 @@ int auxiliar(
                                 number_of_restrictions];
           }
         }
+
+        for (int i = 0; i < number_of_restrictions + number_of_variables; i++) {
+          printf("%d ", base[i]);
+        }
+        printf("\n");
+
+        /* Se achamos base viável, precisamos pivotear a matrix original para
+         * que a nova base tenha custos zero e elas sejam identidade */
+
+        /* for (int j = 0; j < number_of_variables + number_of_restrictions;
+        j++) { if (base[j] == 1) {
+
+            // acha linha na coluna j c entrada nao nula
+            int linha_nao_nula = -1;
+            for (int i = 1; i < number_of_restrictions + 1; i++) {
+              if (matrix[i][MAX_NUMBER_OF_RESTRICTIONS + j] != 0) {
+                linha_nao_nula = i;
+                break;
+              }
+            }
+            if (linha_nao_nula == -1) {
+              printf("queeeee\n");
+              exit(0);
+            }
+            if (matrix[0][MAX_NUMBER_OF_RESTRICTIONS + j] == 0) {
+              continue;
+            }
+            double ratio =
+                matrix[0][MAX_NUMBER_OF_RESTRICTIONS + j] /
+                matrix[linha_nao_nula][MAX_NUMBER_OF_RESTRICTIONS + j];
+
+
+            for (int i = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
+                 i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
+                         number_of_restrictions + 1;
+                 i++) {
+              matrix[0][i] -= matrix[linha_nao_nula][i] * ratio;
+            }
+          }
+        } */
+
         return 1;
       } else {
 
