@@ -310,7 +310,8 @@ int auxiliar(
                  number_of_restrictions + number_of_restrictions;
          i++) {
 
-      if (matrix_auxiliar[0][i] < 0 && fabs(matrix_auxiliar[0][i]) > 10e-6 && base[i] == 0) {
+      if (matrix_auxiliar[0][i] < 0 && fabs(matrix_auxiliar[0][i]) > 10e-6 &&
+          base[i] == 0) {
         col = i;
         break;
       }
@@ -343,7 +344,6 @@ int auxiliar(
 
         /* Se achamos base viável, precisamos pivotear a matrix original para
          * que a nova base tenha custos zero e elas sejam identidade */
-
 
         double result[MAX_NUMBER_OF_RESTRICTIONS][MAX_NUMBER_OF_RESTRICTIONS +
                                                   MAX_NUMBER_OF_VARIABLES + 1] =
@@ -523,14 +523,11 @@ int auxiliar(
 
     // zera resto da coluna
 
-
-
     for (int i = 0; i < number_of_restrictions + 1; i++) {
       if (i == min_ratio_line) {
         continue;
       }
-      double curr_ratio =
-          matrix_auxiliar[i][col];
+      double curr_ratio = matrix_auxiliar[i][col];
 
       for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
            j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
