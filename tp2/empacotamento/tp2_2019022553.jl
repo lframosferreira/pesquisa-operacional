@@ -36,21 +36,21 @@ function solve()
   allowed_weight = 20.0
   for i in 1:data.numberOfObjects
     if (allowed_weight - data.weights[i] >= 0.0)
-      solution[box, idx] = sorted_indices[i] - 1
+      solution[box, idx] = sorted_indices[i]
       allowed_weight -= data.weights[i]
       idx += 1
     else #= Caio aqui apenas quando não cabe um objeto na caixa atual, então o coloco na próxima e continuo =#
       idx = 1
       box += 1
       allowed_weight = 20.0 - data.weights[i]
-      solution[box, idx] = sorted_indices[i] - 1
+      solution[box, idx] = sorted_indices[i]
       idx = 2
     end
   end
 
 
   #= Acabou a iteração, podemos printar a solução =#
-  println("TP2 2019022553 = ", box)
+  println("TP2 2019022553 = ", box - 1)
   for i in 1:box
     for j in 1:data.numberOfObjects
       if solution[i, j] == -1
