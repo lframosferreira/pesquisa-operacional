@@ -63,7 +63,7 @@ void tableau(
          i < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                  number_of_restrictions;
          i++) {
-      if (matrix[0][i] < 0 && base[i] == 0) {
+      if (matrix[0][i] < 0 && fabs(matrix[0][i]) > 10e-6 && base[i] == 0) {
         col = i;
         break;
       }
@@ -82,7 +82,7 @@ void tableau(
         if (base[i] == 1) {
           int linha_com_1;
           for (int j = 1; j < number_of_restrictions + 1; j++) {
-            if (matrix[j][MAX_NUMBER_OF_RESTRICTIONS + i] == 1) {
+            if (fabs(matrix[j][MAX_NUMBER_OF_RESTRICTIONS + i] - 1) < 10e-6) {
               linha_com_1 = j;
               break;
             }
@@ -143,7 +143,7 @@ void tableau(
           int linha_com_1 = -1;
           ;
           for (int j = 1; j < number_of_restrictions + 1; j++) {
-            if (fabs(matrix[j][MAX_NUMBER_OF_RESTRICTIONS + i] - 1) <= 10e-4) {
+            if (fabs(matrix[j][MAX_NUMBER_OF_RESTRICTIONS + i] - 1) <= 10e-6) {
               linha_com_1 = j;
               break;
             }
@@ -310,7 +310,7 @@ int auxiliar(
                  number_of_restrictions + number_of_restrictions;
          i++) {
 
-      if (matrix_auxiliar[0][i] < 0 && base[i] == 0) {
+      if (matrix_auxiliar[0][i] < 0 && fabs(matrix_auxiliar[0][i]) > 10e-6 && base[i] == 0) {
         col = i;
         break;
       }
@@ -318,6 +318,7 @@ int auxiliar(
 
     if (col == -1) { // auxiliar achou otimo, checar dois casos
       /* Aqui eu dou round pq erro numerico pode atrapalhar a checagem */
+
       if (round(
               matrix_auxiliar[0][MAX_NUMBER_OF_RESTRICTIONS +
                                  number_of_variables + number_of_restrictions +
@@ -343,10 +344,6 @@ int auxiliar(
         /* Se achamos base viável, precisamos pivotear a matrix original para
          * que a nova base tenha custos zero e elas sejam identidade */
 
-        for (int i = 0; i < number_of_variables + number_of_restrictions; i++) {
-          printf("%d ", base[i]);
-        }
-        printf("\n");
 
         double result[MAX_NUMBER_OF_RESTRICTIONS][MAX_NUMBER_OF_RESTRICTIONS +
                                                   MAX_NUMBER_OF_VARIABLES + 1] =
@@ -381,7 +378,7 @@ int auxiliar(
 
             for (int j = 1; j < number_of_restrictions + 1; j++) {
               if (fabs(matrix[j][i + MAX_NUMBER_OF_RESTRICTIONS] - 1) <=
-                  10e-4) {
+                  10e-6) {
                 linha_com_1 = j;
                 break;
               }
@@ -440,7 +437,6 @@ int auxiliar(
     }
 
     if (ratio == -1) { // nunca vai cair pq auxiliar é limitada
-      fprintf(stdout, "Auxiliar deu ilimitada, algo esta errado\n");
 
       // logica de multiplciar plea inversa e zerar ct nas bases repetida do
       // caso anterior
@@ -477,7 +473,7 @@ int auxiliar(
           int linha_com_1 = -1;
 
           for (int j = 1; j < number_of_restrictions + 1; j++) {
-            if (fabs(matrix[j][i + MAX_NUMBER_OF_RESTRICTIONS] - 1) <= 10e-4) {
+            if (fabs(matrix[j][i + MAX_NUMBER_OF_RESTRICTIONS] - 1) <= 10e-6) {
               linha_com_1 = j;
               break;
             }
@@ -500,7 +496,6 @@ int auxiliar(
 
       return 1; // retorno 1 pq nao vai importat mt, em tese so cai aqui cm erro
                 // numerico desconsideravel em c ~ 0
-      exit(EXIT_SUCCESS);
     }
 
     /* Atualiza a base */
@@ -527,14 +522,18 @@ int auxiliar(
     }
 
     // zera resto da coluna
+
+
+
     for (int i = 0; i < number_of_restrictions + 1; i++) {
-      if (i == min_ratio_line)
+      if (i == min_ratio_line) {
         continue;
+      }
       double curr_ratio =
-          matrix_auxiliar[i][col] / matrix_auxiliar[min_ratio_line][col];
+          matrix_auxiliar[i][col];
 
       for (int j = MAX_NUMBER_OF_RESTRICTIONS - number_of_restrictions;
-           j < MAX_NUMBER_OF_VARIABLES + number_of_variables +
+           j < MAX_NUMBER_OF_RESTRICTIONS + number_of_variables +
                    number_of_restrictions + number_of_restrictions + 1;
            j++) {
         matrix_auxiliar[i][j] -=
