@@ -46,7 +46,7 @@ function solve()
       covered[idx] = 1
       solution[idx] = 1
       count += 1
-      for j in 1:length(data.adjList[idx])
+      for j in data.adjList[idx]
         covered[j] = 1
       end
     end
@@ -55,10 +55,6 @@ function solve()
 
 
   println("TP2 2019022553 = ", count)
-  for i in 1:data.numberOfVertices
-    print("$(solution[i])")
-  end
-  println()
 end
 
 solve()
