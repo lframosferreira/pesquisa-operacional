@@ -1,37 +1,54 @@
 mutable struct coloracaoData
   numberOfVertices::Int64 # número de vértices
-  adjMatrix::Matrix{Int64} # Matriz de adjacências
+  adjList::Array{Array{Int64}} # Matriz de adjacências
+  degrees::Array{Int64} # Graus dos vértices
 end
 
 function readData(file)
   numberOfVertices = 0
-  adjMatrix = missing
+  adjList = missing
+  degrees = missing
   for line in eachline(file)
     q = split(line, "\t")
     if (q[1] == "n")
       numberOfVertices = parse(Int64, q[2])
-      adjMatrix = zeros(Int64, numberOfVertices, numberOfVertices)
+      adjList = [[] for i = 1:numberOfVertices]
+      degrees = zeros(Int64, numberOfVertices)
     elseif q[1] == "e"
       v1 = parse(Int64, q[2])
       v2 = parse(Int64, q[3])
-      adjMatrix[v1, v2] = 1
-      adjMatrix[v2, v1] = 1
+      push!(adjList[v1], v2)
+      push!(adjList[v2], v1)
+      degrees[v1] += 1
+      degrees[v2] += 1
     end
   end
-  return coloracaoData(numberOfVertices, adjMatrix)
+  return coloracaoData(numberOfVertices, adjList, degrees)
 end
 
 file = open(ARGS[1], "r")
 
 data = readData(file)
 
+sorted_indices = sortperm(data.degrees, rev=true)
+sort!(data.degrees)
 
 function solve()
-  
+  colors = zeros(Int64, data.numberOfVertices) 
   solution = zeros(Int64, data.numberOfVertices)
-  solution[1] = 1
-  for i in 2:data.numberOfVertices
-     
+  solution[sorted_indices[1]] = 1
+  colors[1] = 1
+  for i in sorted_indices[1:data.numberOfVertices]
+    mask = zeros(Int64, data.numberOfVertices)
+    for neighbour in data.adjList[i]
+      if solution[neighbour] != 0
+        mask[solution[neighbour]] = 1
+      end
+    end
+    solution[i] = findfirst(isequal(0), mask)
   end
+  println("TP2 2019022553 = ", length(unique(solution)))
 
 end
+
+solve()
