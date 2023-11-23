@@ -40,21 +40,30 @@ solution = zeros(Int64, data.numberOfVertices)
 function solve()
   covered = zeros(Int64, data.numberOfVertices) # Mantêm controle sobre vértices já cobertos
   count = 0
+  vertices_sol = []
   for i in 1:data.numberOfVertices
     idx = sorted_indices[i]
     if (covered[idx] == 0)
       covered[idx] = 1
       solution[idx] = 1
       count += 1
+      push!(vertices_sol, idx)
       for j in data.adjList[idx]
         covered[j] = 1
       end
     end
   end
-
-
-
+  
+  sort!(vertices_sol)
   println("TP2 2019022553 = ", count)
+  for i in 1:length(vertices_sol)
+    if i == length(vertices_sol)
+      print("$(vertices_sol[i])")
+    else
+      print("$(vertices_sol[i])\t") 
+    end
+  end
+  println()
 end
 
 solve()

@@ -47,8 +47,22 @@ function solve()
     end
     solution[i] = findfirst(isequal(0), mask)
   end
-  println("TP2 2019022553 = ", length(unique(solution)))
 
+  vertex_per_color = [[] for i = 1:length(unique(solution))]
+  for (idx, val) in enumerate(solution)
+    push!(vertex_per_color[val], idx)
+  end
+  println("TP2 2019022553 = ", length(unique(solution)))
+  for i in 1:length(unique(solution))
+    for j in 1:length(vertex_per_color[i])
+      if j == length(vertex_per_color[i])
+        print("$(vertex_per_color[i][j])")
+      else
+        print("$(vertex_per_color[i][j])\t")
+      end
+    end
+    println()
+  end
 end
 
 solve()

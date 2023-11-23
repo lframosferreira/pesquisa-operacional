@@ -66,6 +66,4 @@ function solve()
   end
 end
 
-
 solve()
-
